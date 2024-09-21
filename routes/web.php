@@ -4,8 +4,8 @@ use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
 
-Route::get('/', function () {
-    return view('welcome');
+Route::get('/admin/danhmucs', function () {
+    return view('admins.danhmucs.index');
 });
 Route::get('/login', [AuthController::class, 'showFormLogin']);
 Route::post('/login', [AuthController::class, 'login'])->name('login');
