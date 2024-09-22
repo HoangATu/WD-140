@@ -2,59 +2,61 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 class AuthController extends Controller
 {
+    // Hiển thị form đăng nhập
     public function showFormLogin()
     {
         return view('auth.login');
     }
 
-    public function login(Request $request) {
-        $user = $request->validate([
-            'name' => ['required', 'string','max:255'],
+    // Xử lý yêu cầu đăng nhập
+    public function login(Request $request)
+    {
+        // Xác thực đầu vào
+        $credentials = $request->validate([
+            'email' => ['required', 'string', 'email', 'max:255'],
             'password' => ['required', 'string']
         ]);
 
-        if(Auth::attempt($user)){
-            return redirect()->intended('/');
+        // Xử lý đăng nhập
+        if (Auth::attempt($credentials, $request->remember)) {
+            // Nếu đăng nhập thành công, chuyển hướng đến trang chủ
+            return redirect()->intended('/admin'); // Bạn có thể thay đổi URL này theo yêu cầu
         }
 
-        return redirect()->back()->withErrors([
-            'email' => 'Thông tin người dùng không đúng'
-        ]);
+        // Nếu đăng nhập thất bại, quay lại form và báo lỗi
+        return back()->withErrors([
+            'loginError' => 'Email hoặc mật khẩu không đúng',
+        ])->onlyInput('email'); // Giữ lại email để người dùng không cần nhập lại
     }
+
     public function showFormRegister()
     {
         return view('auth.register');
     }
-    public function register(Request $request) {
-       $data = $request->validate([
-        'email' => 'required|string|email|max:255',
-        'name' => 'required|string|max:255',
-        'password' => 'required|string|min:8'
-       ]);
-
-       $user = User::query()->create($data);
-       Auth::login($user);
-       return redirect()->intended('/home');
-    }
-
-    public function logout(Request $request) {
-       Auth::logout();
-       return redirect('/login'); 
-    }
-    public function password_reset()
+    public function register(Request $request)
     {
-        return view('auth.password_reset');
+        $data = $request->validate([
+            'email' => 'required|string|email|max:255',
+            'name' => 'required|string|max:255',
+            'password' => 'required|string|min:8'
+        ]);
+
+        $user = User::query()->create($data);
+        Auth::login($user);
+        return redirect()->intended('login');
     }
-    public function home()
+
+    // Xử lý đăng xuất
+    public function logout(Request $request)
     {
-       dd('home');
+        Auth::logout();
+        return redirect()->route('login'); // Chuyển hướng về trang đăng nhập
     }
 
 }
