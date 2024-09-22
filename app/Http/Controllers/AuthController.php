@@ -41,7 +41,12 @@ class AuthController extends Controller
 
        $user = User::query()->create($data);
        Auth::login($user);
-       return redirect()->intended('login');
+       return redirect()->intended('/home');
+    }
+
+    public function logout(Request $request) {
+       Auth::logout();
+       return redirect('/login'); 
     }
     public function password_reset()
     {
